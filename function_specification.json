@@ -1,0 +1,23 @@
+{
+  "name": "fact_check_claim",
+  "description": "Fact-checks a single claim at a time and determines its veracity using Perplexity API.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "claim": { 
+        "type": "string", 
+        "description": "The claim to be fact-checked" 
+      },
+      "claim_number": { 
+        "type": "integer", 
+        "description": "Current position in the claims list" 
+      },
+      "total_claims": { 
+        "type": "integer", 
+        "description": "Total number of claims to process" 
+      }
+    },
+    "required": ["claim", "claim_number", "total_claims"],
+    "additionalProperties": false
+  }
+}

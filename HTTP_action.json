@@ -1,0 +1,14 @@
+{
+    "url": "https://api.perplexity.ai/chat/completions",
+    "name": "",
+    "method": "POST",
+    "hasBody": true,
+    "hasHeaders": true,
+    "requestBody": "{\"model\": \"{model}\",\"messages\": [{\"role\": \"system\",\"content\": \"{systemMessage}\"},{\"role\": \"user\",\"content\": \"{claim}\"}]}",
+    "requestHeaders": "{\"accept\": \"application/json\",\"authorization\": \"Bearer {apiKey}\"}",
+    "resultTransform": {
+        "engine": "jmes",
+        "expression": "choices[*].message.content | join(' ', @)"
+    },
+    "hasResultTransform": true
+}
