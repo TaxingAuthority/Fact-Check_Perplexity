@@ -66,8 +66,8 @@
       "name": "systemMessage",
       "label": "System Message",
       "description": "Optional; Enter custom system message to guide fact checking behavior.",
-      "defaultValue": "Fact check the following claim and provide citations to support your analysis.",
-      "placeholder": "Default: 'Fact check the following claim and provide citations to support your analysis.'"
+      "defaultValue": "You are a fact checker. Analyze the claim carefully and determine if it is true, false, or partially true. Provide reason for determination and citations.",
+      "placeholder": "Default: 'Analyze the claim carefully and determine if it is true, false, or partially true. Provide reason for determination and citations.'"
     }
   ],
   "overviewMarkdown": "This plugin allows the AI assistant to search for information from the internet using Perplexity Sonar.\n\n**🔑 Perplexity API Key needed**. Click the Settings tab and enter your API Key. Get your Perplexity API Key from [here](https://www.perplexity.ai/settings/api)\n\nExample usage:\n\n> What's the gold price?\n\n> How's the weather at HCMC at the moment?\n",

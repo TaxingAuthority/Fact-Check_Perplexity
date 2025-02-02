@@ -53,8 +53,24 @@ async function factCheckViaPerplexity(params, userSettings) {
       citations: citations.map((c, i) => `[${i + 1}] ${c}`).join('\n'),
       claim_number: claim_number,
       total_claims: total_claims,
-      next_action: isLastClaim ? 'generate_report' : 'continue',
-      original_claim: claim
+      next_action: isLastClaim ? 'Generate final report based on instructions.' : 'Wait for instruction at last claim.',
+      original_claim: claim,
+      // Add report instructions only for the last claim
+      ...(isLastClaim && {
+        report_instructions: `Please compile a comprehensive fact-checking report with the following structure:
+
+1. Executive Summary:
+   - Brief overview of all claims checked
+   - Overall assessment summary
+
+2. Detailed Analysis (for each claim):
+   - Original claim
+   - Verdict (true/false/partially true)
+   - Supporting analysis
+   - Citations
+
+Format using Markdown for readability.`
+      })
     };
 
   } catch (error) {
