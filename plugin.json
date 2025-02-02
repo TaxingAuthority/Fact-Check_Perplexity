@@ -1,5 +1,5 @@
 {
-  "id": "fact-check_via_perplexity",
+  "id": "factCheckViaPerplexity",
   "uuid": "19744173-13dd-481c-a534-97744e8897fc",
   "emoji": "🔍",
   "title": "Fact Checking - Perplexity",
@@ -21,7 +21,7 @@
     "hasResultTransform": true
   },
   "openaiSpec": {
-    "name": "fact-check_via_perplexity",
+    "name": "factCheckViaPerplexity",
     "parameters": {
       "type": "object",
       "required": [

@@ -1,4 +1,4 @@
-function fact-check_via_perplexity(params, userSettings) {
+function factCheckViaPerplexity(params, userSettings) {
   const keyword = params.keyword;
   const model = userSettings.model || 'sonar';
   const systemMessage = userSettings.systemMessage || 'Be precise and concise.';
