@@ -12,7 +12,7 @@
     "method": "POST",
     "hasBody": true,
     "hasHeaders": true,
-    "requestBody": "{\"model\": \"{model}\",\"messages\": [{\"role\": \"system\",\"content\": \"{systemMessage}\"},{\"role\": \"user\",\"content\": \"{keyword}\"}]}",
+    "requestBody": "{\"model\": \"{model}\",\"messages\": [{\"role\": \"system\",\"content\": \"{systemMessage}\"},{\"role\": \"user\",\"content\": \"{claim}\"}]}",
     "requestHeaders": "{\"accept\": \"application/json\",\"authorization\": \"Bearer {apiKey}\"}",
     "resultTransform": {
       "engine": "jmes",
@@ -22,19 +22,29 @@
   },
   "openaiSpec": {
     "name": "factCheckViaPerplexity",
+    "description": "Fact check claims using Perplexity's internet search capabilities. Returns analysis and citations for verification.",
     "parameters": {
       "type": "object",
       "required": [
-        "keyword"
+        "claim",
+        "claim_number",
+        "total_claims"
       ],
       "properties": {
-        "keyword": {
+        "claim": {
           "type": "string",
-          "description": "The search keyword"
+          "description": "The claim to be fact checked"
+        },
+        "claim_number": {
+          "type": "integer",
+          "description": "The position of this claim in the list (1-based)"
+        },
+        "total_claims": {
+          "type": "integer",
+          "description": "Total number of claims to be checked"
         }
       }
-    },
-    "description": "Search for information from the internet using Perplexity."
+    }
   },
   "outputType": "respond_to_ai",
   "userSettings": [
@@ -47,7 +57,7 @@
     },
     {
       "name": "model",
-      "label": "Model", 
+      "label": "Model",
       "description": "Optional; options: \"sonar\", \"sonar-pro\", \"sonar-reasoning\"; default: \"sonar\"",
       "defaultValue": "sonar",
       "placeholder": "sonar (default)"
@@ -55,8 +65,9 @@
     {
       "name": "systemMessage",
       "label": "System Message",
-      "description": "Optional, default: \"Be precise and concise\"",
-      "defaultValue": "Be precise and concise"
+      "description": "Optional; Enter custom system message to guide fact checking behavior.",
+      "defaultValue": "Fact check the following claim and provide citations to support your analysis.",
+      "placeholder": "Default: 'Fact check the following claim and provide citations to support your analysis.'"
     }
   ],
   "overviewMarkdown": "This plugin allows the AI assistant to search for information from the internet using Perplexity Sonar.\n\n**🔑 Perplexity API Key needed**. Click the Settings tab and enter your API Key. Get your Perplexity API Key from [here](https://www.perplexity.ai/settings/api)\n\nExample usage:\n\n> What's the gold price?\n\n> How's the weather at HCMC at the moment?\n",
