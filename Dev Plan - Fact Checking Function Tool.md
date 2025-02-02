@@ -1,6 +1,6 @@
 ## 1. Project Overview
 
-*   **Description:** This project involves creating a TypingMind plugin that enables an LLM to fact-check a user-provided list of claims. The plugin will act as a function tool, which the LLM will call sequentially for each claim. The function tool will utilize the Perplexity API to search the internet for information related to each claim and return the results, including citations, to the LLM.
+*   **Description:** This project aims to develop a TypingMind plugin that enables users to fact-check a list of claims. The plugin will function as a tool, callable by the LLM, that leverages the Perplexity API to verify the truthfulness of each claim. It will handle multiple claims simultaneously and return the results to the LLM for final report generation.
 *   **Main Goal:** To develop a tool that automates the process of fact-checking claims by leveraging the search capabilities of the Perplexity API and the analytical abilities of an LLM.
 *   **Expected End Result:** A functional TypingMind plugin that can receive claims from an LLM, query the Perplexity API, process the results, and signal the LLM to generate a comprehensive report on the validity of each claim with supporting citations.
 *   **Intended User:** Hobbyist users of TypingMind interested in enhancing their ability to verify information using LLMs.
@@ -9,11 +9,10 @@
 ## 2. Core Features/Tasks
 
 *   **Main Functionality:**
-    *   Process a single claim at a time by querying the Perplexity API.
+    *   Process multiple claims in parallel by querying the Perplexity API.
     *   Receive a claim from the LLM, along with its position in the list.
     *   Send the fact-checking results back to the LLM, including analysis and citations.
-    *   Signal the LLM when all claims have been processed, indicating it's time to generate the final report.
-    *   Visualize the sequence of interactions between the User, LLM, Function Tool, and Perplexity API are described in the visualizations section.
+    *   Signal to the LLM alongside results from the last claim to indicate it's time to generate the final report.
 
 *   **Must-have Features:**
     *   **Parallel Claim Processing:** Handle multiple claims simultaneously
@@ -21,8 +20,8 @@
     *   **State Tracking:** Track progress of multiple concurrent fact checks
     *   **Perplexity API Integration:** Successfully query the API with a given claim and retrieve relevant results.
     *   **Result Handling:** Extract the analysis and citations from the API response.
-    *   **LLM Communication:** Properly send results to the LLM and interpret instructions for the next action.
-    *   **Report Generation Signal:** Accurately indicate to the LLM when to produce the final report.
+    *   **LLM Communication:** Properly send results to the LLM and send instructions for the next action.
+    *   **Report Generation Signal:** Instruct the LLM when to the final report alongside deliverance of the final fact checked claim.
 
 *   **Nice-to-have Features:**
     *   **Error Handling and Retries:** Implement robust error handling for API call failures, with potential retry mechanisms.
@@ -30,25 +29,27 @@
     *   **Token Efficient Output:** Ensure the LLM doesn't output unnecessary or repeating content during the fact checking process.
 
 *   **Task Breakdown:**
-    *   **TypingMind Plugin Setup:** Create the basic plugin structure according to the provided development guide.
-    *   **Function Specification:** Define the OpenAI function spec for `fact_check_claim`.
+    *   **TypingMind Plugin Setup:** Create the basic plugin structure (`implementation.js`, `plugin.json`, `README.md`) according to the provided development guide.
+    *   **Function Specification:** Define the OpenAI function spec for `fact_check_claim` in `plugin.json`.
     *   **Perplexity API Interaction:**
-        *   Build the API request with the appropriate parameters.
+        *   Build the API request with the appropriate parameters (claim, model, system message).
         *   Send the request and handle the response.
         *   Extract the relevant information (analysis, citations).
     *   **LLM Communication Logic:**
         *   Receive and parse the claim and other parameters from the LLM.
-        *   Format and send the results back to the LLM.
-        *   Determine the `next_action` based on the current claim's position and the total number of claims.
+        *   Format and send the results back to the LLM, including `next_action`.
+    *   **Parallel Processing and State Management:**
+        *   Implement logic to track the status of each claim.
+        *   Manage concurrent API calls and ensure proper synchronization.
     *   **Report Generation Logic:**
-        *   Store the results of each claim as they are processed.
         *   When signaled, format the collected results into a comprehensive report.
 
 *   **Natural Ordering/Dependencies:**
-    *   Start by setting up the TypingMind plugin and defining the function specification.
-    *   Implement the Perplexity API interaction before handling the LLM communication.
-    *   Develop the single-claim processing logic before implementing the sequential flow and report generation.
-    *   Thoroughly test each component before integrating them.
+    *   User submits claims to the LLM.
+    *   LLM calls the `fact_check_claim` function and passes each claim on separate calls.
+    *   The function queries the Perplexity API for each claim.
+    *   The function processes the API response, determines the truth status, and sends the results back to the LLM.
+    *   The LLM generates the final report when signaled.
 
 ## 3. Technical Details
 
@@ -57,13 +58,13 @@
     *   Standard JavaScript built-in `fetch` API for making HTTP requests to the Perplexity API.
     *   No other external libraries are required.
 *   **Data Storage Requirements:**
-    *   No persistent data storage is needed. All data will be handled in-memory during the execution of the function.
+    *   No persistent data storage is needed. All data will be handled in-memory during the execution of the function and in the LLM context.
 *   **API Integrations:**
     *   **Perplexity API:** Used to perform internet searches and retrieve fact-checking information. The function tool will need to authenticate with the API using a user-provided API key.
     *   **OpenAI Function Calling API:** The structure and parameters of the `fact_check_claim` function will be defined according to this specification, allowing the LLM to call it correctly.
 *   **Basic Architecture Decisions:**
     *   The core of the plugin will be a single function, `fact_check_claim`, which will be called by the LLM for each claim.
-    *   Helper functions will be used to encapsulate specific tasks, such as:
+    *   Helper functions could be used to encapsulate specific tasks, such as:
         *   `queryPerplexity`: Handles the interaction with the Perplexity API.
         *   `determineTruthStatus`: Analyzes the Perplexity response to determine if a claim is true, partially true, or false.
         *   `formatReport`: (Potentially handled by the LLM) Formats the final report with all claims, their statuses, and citations.
@@ -97,7 +98,7 @@
     *   While performance is not the primary concern for a small hobby project, aim for reasonably efficient code.
     *   Prioritize code readability and maintainability over micro-optimizations unless significant performance bottlenecks are identified.
     *   Minimize unnecessary API calls or computations.
-    *   Focus on token efficiency. Minimize token usage for the user LLM. Token efficient meaning that we don't want the LLM to output repeating content until the final it generates the final report. Quality should not be materially diminshed to achieve this.
+    *   Focus on token efficiency. Minimize token usage for the user LLM. Token efficient meaning that we don't want the LLM to output repeating content until it generates the final report. Quality should not be materially diminshed to achieve this.
 *   **Platform Constraints:**
     *   The plugin must function correctly within the TypingMind environment and adhere to its plugin architecture guidelines.
     *   Since the code will execute in the user's browser, be aware of and work within the limitations of a browser-based JavaScript environment, particularly regarding CORS.
@@ -162,138 +163,148 @@ stateDiagram-v2
 
 ```
 fact-check-plugin/
-└── index.js
+├── implementation.js
+├── plugin.json
+└── README.md
 ```
 
-### `index.js`:
+### `implementation.js`:
 
 ```javascript
-// OpenAI Function Spec
-const openAIFunctionSpec = {
-  "name": "fact_check_claim",
-  "description": "Fact-checks a single claim using the Perplexity API and provides the result.",
-  "parameters": {
-    "type": "object",
-    "properties": {
-      "claim": { "type": "string", "description": "The claim to be fact-checked." },
-      "claim_number": { "type": "integer", "description": "The current claim's position in the list." },
-      "total_claims": { "type": "integer", "description": "Total number of claims to process." }
-    },
-    "required": ["claim", "claim_number", "total_claims"]
+function search_via_perplexity_sonar(params, userSettings) {
+  const keyword = params.keyword;
+  const model = userSettings.model || 'sonar';
+  const systemMessage = userSettings.systemMessage || 'Be precise and concise.';
+  const key = userSettings.apiKey;
+ 
+  if (!key) {
+    throw new Error(
+      'Please set the Perplexity API Key in the plugin settings.'
+    );
   }
-};
-
-// Main function called by the LLM
-async function fact_check_claim(params, userSettings) {
-  const { claim, claim_number, total_claims } = params;
-  const { apiKey, model, systemMessage } = userSettings;
-
-  // Validate parameters (e.g., check if claim is a non-empty string, etc.)
-  if (!claim || typeof claim !== 'string' || claim.trim().length === 0) {
-    throw new Error("Invalid claim provided.");
-  }
-
-  if (!apiKey) {
-    throw new Error("Perplexity API key is missing. Please provide it in the plugin settings.");
-  }
-  
-  // Build prompt for Perplexity API
-  const prompt = `Fact-check the following claim: ${claim}`;
-
-  // Query Perplexity API
-  let response;
-  try {
-    response = await queryPerplexity(prompt, model, systemMessage, apiKey);
-  } catch (error) {
-    console.error("Error querying Perplexity API:", error);
-    // Handle API errors appropriately (e.g., retry, return error message to LLM)
-    throw new Error("Failed to query Perplexity API: " + error.message);
-  }
-
-  // Extract analysis and citations
-  const analysis = response.content;
-  const citations = response.citations;
-
-  // Determine the truth status of the claim
-  const status = determineTruthStatus(analysis);
-
-  // Determine next action
-  const next_action = claim_number < total_claims ? 'next_claim' : 'generate_report';
-
-  // Return the result to the LLM
-  return {
-    claim,
-    status,
-    analysis,
-    citations,
-    next_action
-  };
-}
-
-// Helper function to query the Perplexity API
-async function queryPerplexity(prompt, model, systemMessage, apiKey) {
-  // Implement the logic to send a request to the Perplexity API
-  // and return the response
-  const url = 'https://api.perplexity.ai/chat/completions';
-  const perplexityModel = model || 'sonar-medium-latest'; // Default model if not provided by user.
-
-  const response = await fetch(url, {
+ 
+  return fetch('https://api.perplexity.ai/chat/completions', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
+      'content-type': 'application/json',
+      accept: 'application/json',
+      authorization: 'Bearer ' + key,
     },
     body: JSON.stringify({
-      model: perplexityModel,
+      model: model,
       messages: [
-        { role: 'system', content: systemMessage || 'Be precise and concise.' },
-        { role: 'user', content: prompt }
-      ]
-    })
-  });
+        {
+          role: 'system',
+          content: systemMessage,
+        },
+        {
+          role: 'user',
+          content: keyword,
+        },
+      ],
+    }),
+  })
+    .then((r) => r.json())
+    .then((response) => {
+      const content = response.choices.map((c) => c.message.content).join(' ');
+      const citations = response.citations;
+ 
+      const citationsText = citations
+        ? '\\n\\n Citations:\\n' + citations.map((c, index) => `[${index + 1}] ${c}`).join('\\n')
+        : '';
 
-  if (!response.ok) {
-    throw new Error(`Perplexity API request failed with status ${response.status}`);
-  }
-
-  const data = await response.json();
-
-  const content = data.choices[0].message.content; // Assuming the response structure
-  const citations = data.choices[0].citations || []; // Assuming the response structure
-
-  return { content, citations };
+      return (
+        content +
+        citationsText +
+        '\\n\\nIMPORTANT: When using this information in your response, you must include the citations provided above. Place citation numbers [X] immediately after the information they support and include the complete Citations section at the end of your response.'
+      );
+    });
 }
+```
+### `plugin.json`:
 
-// Helper function to determine the truth status of a claim based on the Perplexity API response
-function determineTruthStatus(analysis) {
-  // Implement the logic to analyze the Perplexity API response
-  // and return a string indicating whether the claim is "true", "partially true", or "false"
-  // This is a placeholder - you'll need to refine this based on how you want to interpret the Perplexity response
-  if (analysis.toLowerCase().includes("true")) {
-    return "true";
-  } else if (analysis.toLowerCase().includes("false")) {
-    return "false";
-  } else {
-    return "partially true";
-  }
+```json
+{
+  "id": "search_via_perplexity_sonar",
+  "uuid": "9cc8cbd1-2add-4634-b06e-3bae18763230",
+  "emoji": "🔍",
+  "title": "Perplexity Sonar Search",
+  "iconURL": "https://custom.typingmind.com/assets/models/perplexityai.png",
+  "githubURL": "https://github.com/TaxingAuthority/Perplexity-Sonar-Search",
+  "httpAction": {
+    "id": "4b3dda94-9f08-46da-b6f6-28b5883ab5b5",
+    "url": "https://api.perplexity.ai/chat/completions",
+    "name": "",
+    "method": "POST",
+    "hasBody": true,
+    "hasHeaders": true,
+    "requestBody": "{\"model\": \"{model}\",\"messages\": [{\"role\": \"system\",\"content\": \"{systemMessage}\"},{\"role\": \"user\",\"content\": \"{keyword}\"}]}",
+    "requestHeaders": "{\"accept\": \"application/json\",\"authorization\": \"Bearer {apiKey}\"}",
+    "resultTransform": {
+      "engine": "jmes",
+      "expression": "choices[*].message.content | join(' ', @)"
+    },
+    "hasResultTransform": true
+  },
+  "openaiSpec": {
+    "name": "search_via_perplexity_sonar",
+    "parameters": {
+      "type": "object",
+      "required": [
+        "keyword"
+      ],
+      "properties": {
+        "keyword": {
+          "type": "string",
+          "description": "The search keyword"
+        }
+      }
+    },
+    "description": "Search for information from the internet using Perplexity."
+  },
+  "outputType": "respond_to_ai",
+  "userSettings": [
+    {
+      "name": "apiKey",
+      "type": "password",
+      "label": "Perplexity API Key",
+      "required": true,
+      "description": "Get your API Key from Perplexity: https://www.perplexity.ai/settings/api"
+    },
+    {
+      "name": "model",
+      "label": "Model", 
+      "description": "Optional; options: \"sonar\", \"sonar-pro\", \"sonar-reasoning\"; default: \"sonar\"",
+      "defaultValue": "sonar",
+      "placeholder": "sonar (default)"
+    },
+    {
+      "name": "systemMessage",
+      "label": "System Message",
+      "description": "Optional, default: \"Be precise and concise\"",
+      "defaultValue": "Be precise and concise"
+    }
+  ],
+  "overviewMarkdown": "This plugin allows the AI assistant to search for information from the internet using Perplexity Sonar.\n\n**🔑 Perplexity API Key needed**. Click the Settings tab and enter your API Key. Get your Perplexity API Key from [here](https://www.perplexity.ai/settings/api)\n\nExample usage:\n\n> What's the gold price?\n\n> How's the weather at HCMC at the moment?\n",
+  "authenticationType": "AUTH_TYPE_NONE",
+  "implementationType": "javascript"
 }
+```
+### `README.md`:
 
-// Example of parallel function calls
-const claims = [
-  "The Earth is flat",
-  "Water boils at 100°C",
-  "Humans cannot breathe underwater"
-];
+```markdown
+# Fact Checker Plugin for TypingMind
 
-// Parallel function calls
-const tool_calls = claims.map((claim, index) => ({
-  name: "fact_check_claim",
-  arguments: {
-    claim,
-    claim_number: index + 1,
-    total_claims: claims.length
-  }
-}));
+This plugin allows users to fact-check claims by leveraging the Perplexity API. It can process multiple claims in parallel and returns the results to the LLM for report generation.
+
+**🔑 Perplexity API Key needed**. Click the Settings tab and enter your API Key. Get your Perplexity API Key from [here](https://www.perplexity.ai/settings/api)
+
+## Example Usage:
+
+> Fact-check the following claims:
+> 1. The Earth is flat.
+> 2. Water boils at 100°C.
+> 3. Humans can breathe underwater.
 ```
 
 ## 7. Testing Requirements
@@ -301,7 +312,7 @@ const tool_calls = claims.map((claim, index) => ({
 *   **Testing Focus:**
     *   Verify that each claim is correctly fact-checked and assigned the appropriate status ("true," "partially true," or "false").
     *   Ensure that citations are correctly extracted from the Perplexity API response and included in the results.
-    *   Test the sequential processing of claims to ensure the correct flow and communication with the LLM.
+    *   Test the parallel processing of claims to ensure the correct flow and communication with the LLM.
     *   Verify that the final report is generated correctly when the `generate_report` signal is sent.
 *   **Edge Cases:**
     *   Network failures or timeouts during Perplexity API calls.
@@ -309,23 +320,24 @@ const tool_calls = claims.map((claim, index) => ({
     *   Invalid input parameters (e.g., missing claim, incorrect claim number).
     *   Empty or excessively long claims.
     *   Claims that are ambiguous or difficult to fact-check.
+    *   API rate limiting.
+    *   Concurrent requests exceeding the API's capacity.
 *   **Validation Approaches:**
     *   Implement comprehensive error handling using `try-catch` blocks to catch and handle potential exceptions during API calls and data processing.
     *   Use mock data to simulate different types of Perplexity API responses during development and testing, allowing you to test various scenarios without making actual API calls.
     *   Validate the input parameters at the beginning of the `fact_check_claim` function to ensure they are of the correct type and format.
 *   **Manual Testing Checkpoints:**
-    *   Test the plugin with a single claim input and verify that the result is correct.
-    *   Test with multiple claims and verify that they are processed sequentially and the final report is accurate.
+    *   Test the plugin with a single claim input and verify that the result is correct (status, analysis, citations).
+    *   Test with multiple claims and verify that they are processed in parallel and the final report (if generated by the plugin) is accurate.
     *   Test with an invalid or missing Perplexity API key and verify that the plugin displays an appropriate error message.
-    *   Manually inspect the generated report to ensure it is formatted correctly and includes all the necessary information (claim, status, analysis, citations).
+    *   Manually inspect the generated report (if generated by the plugin) to ensure it is formatted correctly and includes all the necessary information (claim, status, analysis, citations).
 
 ## 8. Deployment Plan
 
 *   **Execution Environment:** The plugin will run entirely within the user's browser as part of the TypingMind platform.
-*   **Hosting Requirements:** No external hosting is required since the code executes client-side within the TypingMind environment.
+*   **Hosting Requirements:** The source code will be hosted on Github and extracted into TypingMind.
 *   **Packaging/Distribution:**
-    *   Package the plugin according to the TypingMind plugin development guidelines. This will likely involve creating a single JavaScript file (`index.js`) containing all the necessary code.
-    *   Provide clear instructions to users on how to install the plugin within their TypingMind workspace.
+    *   Package the plugin according to the TypingMind plugin development guidelines. This will likely involve creating a single JavaScript file (`implementation.js`) containing all the necessary code, along with the `plugin.json` and `README.md` files.
 *   **Setup Instructions:**
     *   Users will need to obtain a Perplexity API Key from the Perplexity website ( [https://www.perplexity.ai/settings/api](https://www.perplexity.ai/settings/api) ) and input it into the plugin settings within TypingMind.
     *   Optionally, users can configure the Perplexity model and system message they want to use in the plugin settings.
